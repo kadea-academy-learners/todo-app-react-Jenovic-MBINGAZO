@@ -1,6 +1,8 @@
+"use client"
+
 import type React from "react"
-import { useState } from "react"
-import { XCircle, CheckCircle2 } from "lucide-react"
+import { useState, useEffect } from "react"
+import { XCircle, CheckCircle2, ListTodo } from "lucide-react"
 
 interface Task {
   id: number
@@ -12,6 +14,22 @@ interface TaskItemProps {
   task: Task
   onToggle: (id: number) => void
   onDelete: (id: number) => void
+}
+
+const LoadingScreen: React.FC = () => {
+  return (
+    <div className="fixed inset-0 bg-blue-600 flex items-center justify-center z-50">
+      <div className="text-center">
+        <ListTodo className="w-16 h-16 text-white animate-pulse mb-4" />
+        <div className="text-white text-2xl font-semibold">Chargement...</div>
+        <div className="mt-4 flex space-x-2 justify-center">
+          <div className="w-3 h-3 bg-white rounded-full animate-bounce"></div>
+          <div className="w-3 h-3 bg-white rounded-full animate-bounce" style={{ animationDelay: "0.2s" }}></div>
+          <div className="w-3 h-3 bg-white rounded-full animate-bounce" style={{ animationDelay: "0.4s" }}></div>
+        </div>
+      </div>
+    </div>
+  )
 }
 
 const TaskItem: React.FC<TaskItemProps> = ({ task, onToggle, onDelete }) => {
@@ -36,6 +54,16 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, onToggle, onDelete }) => {
 const App: React.FC = () => {
   const [tasks, setTasks] = useState<Task[]>([])
   const [newTask, setNewTask] = useState<string>("")
+  const [isLoading, setIsLoading] = useState<boolean>(true)
+
+  useEffect(() => {
+    // Simuler un temps de chargement
+    const timer = setTimeout(() => {
+      setIsLoading(false)
+    }, 2000)
+
+    return () => clearTimeout(timer)
+  }, [])
 
   const addTask = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -51,6 +79,10 @@ const App: React.FC = () => {
 
   const deleteTask = (id: number) => {
     setTasks(tasks.filter((task) => task.id !== id))
+  }
+
+  if (isLoading) {
+    return <LoadingScreen />
   }
 
   return (
@@ -102,4 +134,5 @@ const App: React.FC = () => {
   )
 }
 
-export default App;
+export default App
+
