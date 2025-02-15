@@ -1,35 +1,105 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import type React from "react"
+import { useState } from "react"
+import { XCircle, CheckCircle2 } from "lucide-react"
 
-function App() {
-  const [count, setCount] = useState(0)
+interface Task {
+  id: number
+  text: string
+  completed: boolean
+}
 
+interface TaskItemProps {
+  task: Task
+  onToggle: (id: number) => void
+  onDelete: (id: number) => void
+}
+
+const TaskItem: React.FC<TaskItemProps> = ({ task, onToggle, onDelete }) => {
   return (
-    <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+    <li className="flex items-center justify-between p-3 bg-white border-b border-gray-200">
+      <div className="flex items-center">
+        <input
+          type="checkbox"
+          checked={task.completed}
+          onChange={() => onToggle(task.id)}
+          className="w-4 h-4 mr-2 border-gray-300 rounded text-blue-600 focus:ring-blue-500"
+        />
+        <span className={`${task.completed ? "line-through text-gray-500" : "text-gray-900"}`}>{task.text}</span>
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+      <button onClick={() => onDelete(task.id)} className="text-red-500 hover:text-red-700">
+        <XCircle size={20} />
+      </button>
+    </li>
   )
 }
 
-export default App
+const App: React.FC = () => {
+  const [tasks, setTasks] = useState<Task[]>([])
+  const [newTask, setNewTask] = useState<string>("")
+
+  const addTask = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    if (newTask.trim() !== "") {
+      setTasks([...tasks, { id: Date.now(), text: newTask, completed: false }])
+      setNewTask("")
+    }
+  }
+
+  const toggleTask = (id: number) => {
+    setTasks(tasks.map((task) => (task.id === id ? { ...task, completed: !task.completed } : task)))
+  }
+
+  const deleteTask = (id: number) => {
+    setTasks(tasks.filter((task) => task.id !== id))
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-100 py-6 flex flex-col justify-center sm:py-12">
+      <div className="relative py-3 sm:max-w-xl sm:mx-auto">
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-yellow-500 shadow-lg transform -skew-y-6 sm:skew-y-0 sm:-rotate-6 sm:rounded-3xl"></div>
+        <div className="relative px-4 py-10 bg-white shadow-lg sm:rounded-3xl sm:p-20">
+          <div className="max-w-md mx-auto">
+            <div className="divide-y divide-gray-200">
+              <div className="py-8 text-base leading-6 space-y-4 text-gray-700 sm:text-lg sm:leading-7">
+                <h1 className="text-3xl font-extrabold text-center text-blue-600">Liste de Tâches</h1>
+                <form onSubmit={addTask} className="mt-8 space-y-6">
+                  <div className="rounded-md shadow-sm -space-y-px">
+                    <div>
+                      <input
+                        type="text"
+                        value={newTask}
+                        onChange={(e) => setNewTask(e.target.value)}
+                        placeholder="Ajouter une nouvelle tâche"
+                        className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <button
+                      type="submit"
+                      className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                    >
+                      <span className="absolute left-0 inset-y-0 flex items-center pl-3">
+                        <CheckCircle2 className="h-5 w-5 text-blue-500 group-hover:text-blue-400" aria-hidden="true" />
+                      </span>
+                      Ajouter
+                    </button>
+                  </div>
+                </form>
+              </div>
+              <div className="pt-6 text-base leading-6 font-bold sm:text-lg sm:leading-7">
+                <ul className="divide-y divide-gray-200">
+                  {tasks.map((task) => (
+                    <TaskItem key={task.id} task={task} onToggle={toggleTask} onDelete={deleteTask} />
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export default App;
